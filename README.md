@@ -20,5 +20,5 @@ Monorepo privado de servicios de salud del dato para Duma. Cada aplicacion conse
 - Cada tenant informa `AVAILABLE`, `NO_DATA`, `NOT_SUPPORTED` o `UNAVAILABLE`; la ausencia de una tabla o de filas nunca se representa como cero.
 - Cada modulo declara por separado su etapa de liberacion, entorno y frescura del dato, alcance y clasificacion academica.
 - Los system logs se escriben en SQL Server mediante host, puerto y base configurables.
-- Los cuatro puertos se fijan mediante `config/ports.example.ps1`.
+- Los tres puertos se fijan mediante `config/ports.example.ps1`.
 - **Hay un solo camino de arranque**: `scripts\start-environment.ps1`. El de `.env` por aplicacion con `compose.yaml` y `make up` se retiro porque forzaba `DUMA_*_STANDALONE_MODE: true` y hacia pasar por verde cualquier comprobacion de autenticacion.

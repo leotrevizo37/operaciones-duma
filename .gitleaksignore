@@ -1,0 +1,2 @@
+scripts/initialize-databases.ps1:hardcoded-secret-assignment:31
+scripts/initialize-databases.ps1:connection-string-password:31

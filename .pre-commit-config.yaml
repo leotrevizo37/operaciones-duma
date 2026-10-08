@@ -1,0 +1,48 @@
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.29.1
+    hooks:
+      - id: gitleaks
+        args:
+          - --config=.gitleaks.toml
+          - --redact
+
+  - repo: https://github.com/sqlfluff/sqlfluff
+    rev: 4.3.0
+    hooks:
+      - id: sqlfluff-lint
+        files: ^[^/]+/db/.*\.sql$
+        args:
+          - --dialect=tsql
+          - --exclude-rules=CP02,RF04,LT05
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        files: \.ya?ml$
+        args:
+          - -f
+          - parsable
+          - -d
+          - "{extends: default, rules: {line-length: disable, truthy: disable, document-start: disable}}"
+
+  - repo: local
+    hooks:
+      - id: java-verify
+        name: Compile Java and run Maven tests
+        entry: >-
+          --volume /var/run/docker.sock:/var/run/docker.sock
+          --volume duma-maven-cache:/root/.m2
+          --env TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal
+          maven:3.9.14-eclipse-temurin-17 mvn --batch-mode clean verify
+        language: docker_image
+        files: '(^|/)(pom\.xml|src/.*)$|^\.pre-commit-config\.yaml$'
+        pass_filenames: false
+        require_serial: true
+      - id: forbid-private-env-files
+        name: Reject private environment files
+        entry: Private environment files must not be committed
+        language: fail
+        files: '(^|/)\.env($|\.)'
+        exclude: '(^|/)\.env\.example$'

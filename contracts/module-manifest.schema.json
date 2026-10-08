@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://duma.local/contracts/module-manifest.schema.json",
+  "title": "Duma Module Manifest",
+  "type": "object",
+  "required": [
+    "protocolVersion",
+    "moduleId",
+    "displayName",
+    "apiBaseUrl",
+    "releaseStage",
+    "dataEnvironment",
+    "freshnessMode",
+    "clearance",
+    "tenantScope",
+    "capabilities"
+  ],
+  "properties": {
+    "protocolVersion": { "const": "2.0" },
+    "moduleId": { "type": "string", "pattern": "^[a-z][a-z0-9-]+$" },
+    "displayName": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "apiBaseUrl": { "type": "string", "format": "uri" },
+    "releaseStage": { "enum": ["DEVELOPMENT", "TESTING", "STAGING", "PRODUCTION"] },
+    "dataEnvironment": { "enum": ["DEVELOPMENT", "TEST", "STAGE", "PRODUCTION"] },
+    "freshnessMode": { "enum": ["LIVE", "SNAPSHOT", "MOCK"] },
+    "clearance": { "enum": ["ACADEMIC_PRIVATE", "INTERNAL", "RESTRICTED"] },
+    "tenantScope": { "enum": ["ALL_TENANTS", "SELECTED_TENANTS", "CARLSJR_ONLY"] },
+    "capabilities": { "type": "array", "uniqueItems": true, "items": { "type": "string", "maxLength": 120 } }
+  },
+  "additionalProperties": false
+}

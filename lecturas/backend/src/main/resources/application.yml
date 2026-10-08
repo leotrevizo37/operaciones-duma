@@ -1,0 +1,54 @@
+server: {port: "${DUMA_READINGS_BACKEND_PORT:${READINGS_PORT:8082}}"}
+spring:
+  application: {name: lecturas}
+  datasource:
+    url: jdbc:sqlserver://${DUMA_SYSTEMLOG_MSSQL_HOST:localhost}:${DUMA_SYSTEMLOG_MSSQL_PORT:1433};databaseName=${DUMA_SYSTEMLOG_MSSQL_DATABASE:DumaSystemLogs};encrypt=${DUMA_SYSTEMLOG_MSSQL_ENCRYPT:true};trustServerCertificate=${DUMA_SYSTEMLOG_MSSQL_TRUST_SERVER_CERTIFICATE:false}
+    username: ${DUMA_SYSTEMLOG_MSSQL_USERNAME:}
+    password: ${DUMA_SYSTEMLOG_MSSQL_PASSWORD:}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    hikari: {minimum-idle: 0, maximum-pool-size: 3, connection-timeout: 10000}
+  # max-size igual a core-size a proposito: acotar la cola sin acotar max-size cambiaria
+  # una fuga de heap por creacion ilimitada de hilos.
+  task: {execution: {pool: {core-size: 8, max-size: 8, queue-capacity: 1000}}}
+management: {endpoints: {web: {exposure: {include: "health,info"}}}, endpoint: {health: {show-details: never}}}
+logging: {structured: {format: {console: logstash}}}
+duma:
+  module:
+    id: lecturas
+    display-name: Lecturas
+    api-base-url: ${DUMA_READINGS_API_BASE_URL:http://localhost:${DUMA_READINGS_BACKEND_PORT:${READINGS_PORT:8082}}}
+    release-stage: ${DUMA_READINGS_RELEASE_STAGE:DEVELOPMENT}
+    data-environment: ${DUMA_READINGS_DATA_ENVIRONMENT:PRODUCTION}
+    freshness-mode: ${DUMA_READINGS_FRESHNESS_MODE:LIVE}
+    clearance: ${DUMA_READINGS_CLEARANCE:ACADEMIC_PRIVATE}
+    tenant-scope: ${DUMA_READINGS_TENANT_SCOPE:ALL_TENANTS}
+    capabilities: [dashboard, tenant-coverage, sensor-exceptions]
+  security:
+    # Sin valores por defecto para impedir confiar en un emisor no configurado.
+    issuer: ${DUMA_AUTH_ISSUER:}
+    jwk-set-uri: ${DUMA_AUTH_JWKS_URI:}
+    standalone-mode: ${DUMA_READINGS_STANDALONE_MODE:false}
+    # Vacia por defecto: el unico consumidor es el BFF de Duma Web y no hay llamada de navegador.
+    allowed-origins: ${DUMA_READINGS_ALLOWED_ORIGINS:}
+  warehouse:
+    host: ${DUMA_WAREHOUSE_MSSQL_HOST:localhost}
+    port: ${DUMA_WAREHOUSE_MSSQL_PORT:1433}
+    username: ${DUMA_WAREHOUSE_MSSQL_USERNAME:}
+    password: ${DUMA_WAREHOUSE_MSSQL_PASSWORD:}
+    encrypt: ${DUMA_WAREHOUSE_MSSQL_ENCRYPT:${DUMA_SYSTEMLOG_MSSQL_ENCRYPT:true}}
+    trust-server-certificate: ${DUMA_WAREHOUSE_MSSQL_TRUST_SERVER_CERTIFICATE:${DUMA_SYSTEMLOG_MSSQL_TRUST_SERVER_CERTIFICATE:false}}
+    pool-size-per-tenant: ${DUMA_WAREHOUSE_POOL_SIZE_PER_TENANT:2}
+  tenants:
+    carlsjr: {display-name: Carls Jr, database: "${DUMA_TENANT_CARLSJR_DATABASE:WarehouseSidonCarlsJr}"}
+    emerson: {display-name: Emerson, database: "${DUMA_TENANT_EMERSON_DATABASE:WarehouseSidonEmerson}"}
+    valledelencino:
+      display-name: Valle del Encino
+      enabled: ${DUMA_TENANTS_VALLEDELENCINO_ENABLED:true}
+      host: "${DUMA_TENANTS_VALLEDELENCINO_HOST:}"
+      database: "${DUMA_TENANTS_VALLEDELENCINO_DATABASE:${DUMA_TENANT_VALLEDELENCINO_DATABASE:WarehouseSidonvalledelencino}}"
+      username: "${DUMA_TENANTS_VALLEDELENCINO_USERNAME:}"
+      password: "${DUMA_TENANTS_VALLEDELENCINO_PASSWORD:}"
+    mcdonalds: {display-name: "McDonald's", database: "${DUMA_TENANT_MCDONALDS_DATABASE:}"}
+    mcdonalds-cdp: {display-name: "McDonald's CDP", database: "${DUMA_TENANT_MCDONALDS_CDP_DATABASE:}"}
+    smartfit: {display-name: SmartFit, database: "${DUMA_TENANT_SMARTFIT_DATABASE:}"}
+    bafar-poc-gabinete: {display-name: Bafar POC Gabinete, database: "${DUMA_TENANT_BAFAR_POC_GABINETE_DATABASE:}"}

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.1.0</version>
+        <relativePath/>
+    </parent>
+    <groupId>com.duma</groupId>
+    <artifactId>operaciones-core</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <name>operaciones-core</name>
+    <description>Armazon compartido por los cuatro modulos de operaciones. Es una libreria: no
+        declara spring-boot-maven-plugin, porque un jar repackaged no sirve como dependencia.</description>
+    <properties>
+        <java.version>17</java.version>
+    </properties>
+    <dependencies>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-jdbc</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-validation</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
+        <!-- TelemetryController lee el Authentication para el actor. El resource server entra
+             porque core publica ahora el JWKSource y el JwtDecoder de los cuatro modulos: la
+             validacion de firma, emisor y audiencia se escribe una vez. Lo que sigue siendo de cada
+             modulo es su securityFilterChain, que es donde la politica varia de verdad. -->
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-oauth2-resource-server</artifactId></dependency>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+    </dependencies>
+</project>

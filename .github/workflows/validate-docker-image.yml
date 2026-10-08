@@ -1,0 +1,21 @@
+name: Docker image validation
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || startsWith(github.head_ref, 'init/') || startsWith(github.head_ref, 'feat/') || github.head_ref == 'development'
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [experiencia-digital, lecturas, smartaudits]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ${{ matrix.project }} Docker image
+        run: docker build -t ${{ matrix.project }}:${{ github.sha }} ${{ matrix.project }}

@@ -1,0 +1,81 @@
+name: Validate security
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  gitleaks:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Scan repository for secrets
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITLEAKS_VERSION: 8.29.1
+          GITLEAKS_ENABLE_COMMENTS: false
+
+      - name: Reject tracked private environment files
+        shell: python
+        run: |
+          import subprocess
+          import sys
+          from pathlib import PurePosixPath
+
+          result = subprocess.run(
+              ["git", "ls-files", "-z"],
+              check=True,
+              stdout=subprocess.PIPE,
+          )
+
+          blocked = []
+          for raw_path in result.stdout.split(b"\0"):
+              if not raw_path:
+                  continue
+              path = raw_path.decode("utf-8", errors="backslashreplace")
+              name = PurePosixPath(path).name
+              if name != ".env.example" and (
+                  name == ".env" or name.startswith(".env.")
+              ):
+                  blocked.append(path)
+
+          if blocked:
+              print("Private environment files must not be tracked. Only .env.example is allowed.")
+              for path in blocked:
+                  print(f"Blocked file: {path!r}")
+              sys.exit(1)
+
+
+  security-contract:
+    name: Verify architecture security contracts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Verify Java security contracts
+        run: mvn --batch-mode "-Dtest=*Security*Test" test

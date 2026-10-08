@@ -1,0 +1,29 @@
+name: lint-sql.yml
+
+on:
+  push:
+    branches:
+      - main
+      - development
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || startsWith(github.head_ref, 'init/') || startsWith(github.head_ref, 'feat/') || startsWith(github.head_ref, 'fix/')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install SQLFluff
+        run: python -m pip install sqlfluff==4.3.0
+
+      - name: SQLFluff
+        run: >
+          sqlfluff lint experiencia-digital/db lecturas/db smartaudits/db
+          --dialect tsql
+          --exclude-rules CP02,RF04,LT05
